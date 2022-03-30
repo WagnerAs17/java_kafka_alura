@@ -1,14 +1,12 @@
 package br.com.alura.ecommerce;
 
-import java.util.UUID;
-
 public class Message<T> {
 
-    private final String id;
+    private final CorrelationId id;
     private final T payload;
 
-    public Message( T payload) {
-        this.id = UUID.randomUUID().toString();
+    public Message(CorrelationId id , T payload){
+        this.id = id;
         this.payload = payload;
     }
 
@@ -16,14 +14,14 @@ public class Message<T> {
         return payload;
     }
 
-    public String getId() {
+    public CorrelationId getId() {
         return id;
     }
 
     @Override
     public String toString() {
         return "Message{" +
-                "id='" + id + '\'' +
+                "CorrelationId='" + id + '\'' +
                 ", payload=" + payload +
                 '}';
     }
