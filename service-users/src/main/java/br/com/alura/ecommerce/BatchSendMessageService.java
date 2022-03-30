@@ -14,7 +14,7 @@ public class BatchSendMessageService {
 
     private Connection connection;
 
-    BatchSendMessageService() throws SQLException {
+    BatchSendMessageService() {
         String url = "jdbc:sqlite:target/users_database.db";
         try {
             connection = DriverManager.getConnection(url);
@@ -27,7 +27,7 @@ public class BatchSendMessageService {
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         var batchService = new BatchSendMessageService();
         try (var service = new KafkaService<>(BatchSendMessageService.class.getSimpleName(),
                 "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
@@ -45,6 +45,8 @@ public class BatchSendMessageService {
         System.out.println("Topic: " + record.value());
 
         var message = record.value();
+        if(true)
+            throw new IllegalArgumentException("Deadletter");
 
         for(User user : getAllUsers()) {
             userDispatcher.send(message.getPayload(),

@@ -32,7 +32,8 @@ class KafkaService<T> implements Closeable {
         this.consumer = new KafkaConsumer<>(getProperties(groupId, properties));
     }
 
-    void run() {
+    void run() throws ExecutionException, InterruptedException {
+        try(var deadLetterDispatcher = new KafkaDispatcher()){
         while (true) {
             var records = consumer.poll(Duration.ofMillis(100));
             if (!records.isEmpty()) {
@@ -41,13 +42,14 @@ class KafkaService<T> implements Closeable {
                     try {
                         parse.consume(record);
                     } catch (Exception e) {
-                        // only catches Exception because no matter which Exception
-                        // i want to recover and parse the next one
-                        // so far, just logging the exception for this message
-                        e.printStackTrace();
+                        var message = record.value();
+                        deadLetterDispatcher.send("ECOMMERCE_DEADLETTER", message.getId().toString(),
+                                new GsonSerializer<>().serialize("", message),
+                                message.getId().continueWith("DEADLETTER"));
                     }
                 }
             }
+        }
         }
     }
 
